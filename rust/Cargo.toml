@@ -1,0 +1,6 @@
+[package]
+name = "cg3-path-tracer"
+version = "0.1.0"
+authors = ["tychota <tychota@users.noreply.github.com>"]
+
+[dependencies]
