@@ -1,6 +1,7 @@
 [package]
-name = "cg3-path-tracer"
+name = "cg3_path_tracer"
 version = "0.1.0"
 authors = ["tychota <tychota@users.noreply.github.com>"]
 
 [dependencies]
+assert_approx_eq = "1.0.0"

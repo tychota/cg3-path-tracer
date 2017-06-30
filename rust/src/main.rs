@@ -1,3 +1,5 @@
+extern crate cg3_path_tracer;
+
 fn main() {
-    println!("Hello, world!");
+    println!("{:?}", cg3_path_tracer::linalg::Vec3::new(1., 2., 3.));
 }
