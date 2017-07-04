@@ -1,5 +1,6 @@
 extern crate cg3_path_tracer;
+use cg3_path_tracer::linalg;
 
 fn main() {
-    println!("{:?}", cg3_path_tracer::linalg::Vec3::new(1., 2., 3.));
+    println!("{:?}", linalg::Vector::new(1., 2., 3.));
 }

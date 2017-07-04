@@ -4,15 +4,12 @@ use std::f32;
 use std::ops::{Index, Mul, Add};
 
 // Re-export the linalg types from the internal modules
-pub use self::vec3::Vec3;
-pub mod vec3;
+pub use self::vector::Vector;
+pub mod vector;
 
 /// Compute the cross product of two vectors
-pub fn cross<A: Index<usize, Output = f32>, B: Index<usize, Output = f32>>(
-    a: &A,
-    b: &B,
-) -> vec3::Vec3 {
-    Vec3::new(
+pub fn cross<A: Index<usize, Output = f32>, B: Index<usize, Output = f32>>(a: &A, b: &B) -> Vector {
+    Vector::new(
         a[1] * b[2] - a[2] * b[1],
         a[2] * b[0] - a[0] * b[2],
         a[0] * b[1] - a[1] * b[0],
@@ -43,8 +40,8 @@ pub fn clamp<T: PartialOrd>(x: T, min: T, max: T) -> T {
     }
 }
 /// Compute the direction specified by `theta` and `phi` in the spherical coordinate system
-pub fn spherical_dir(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
-    Vec3::new(
+pub fn spherical_dir(sin_theta: f32, cos_theta: f32, phi: f32) -> Vector {
+    Vector::new(
         sin_theta * f32::cos(phi),
         sin_theta * f32::sin(phi),
         cos_theta,
@@ -56,18 +53,18 @@ pub fn spherical_dir_coords(
     sin_theta: f32,
     cos_theta: f32,
     phi: f32,
-    x: &Vec3,
-    y: &Vec3,
-    z: &Vec3,
-) -> Vec3 {
+    x: &Vector,
+    y: &Vector,
+    z: &Vector,
+) -> Vector {
     sin_theta * f32::cos(phi) * *x + sin_theta * f32::sin(phi) * *y + cos_theta * *z
 }
 /// Compute the value of theta for the vector in the spherical coordinate system
-pub fn spherical_theta(v: &Vec3) -> f32 {
+pub fn spherical_theta(v: &Vector) -> f32 {
     f32::acos(clamp(v.z, -1f32, 1f32))
 }
 /// Compute the value of phi for the vector in the spherical coordinate system
-pub fn spherical_phi(v: &Vec3) -> f32 {
+pub fn spherical_phi(v: &Vector) -> f32 {
     match f32::atan2(v.y, v.x) {
         x if x < 0f32 => x + f32::consts::PI * 2.0,
         x => x,
@@ -93,26 +90,26 @@ pub fn solve_quadratic(a: f32, b: f32, c: f32) -> Option<(f32, f32)> {
     }
 }
 /// Compute a local ortho-normal coordinate system from a single vector.
-pub fn coordinate_system(e1: &Vec3) -> (Vec3, Vec3) {
+pub fn coordinate_system(e1: &Vector) -> (Vector, Vector) {
     let e2 = if f32::abs(e1.x) > f32::abs(e1.y) {
         let inv_len = 1.0 / f32::sqrt(e1.x * e1.x + e1.z * e1.z);
-        Vec3::new(-e1.z * inv_len, 0.0, e1.x * inv_len)
+        Vector::new(-e1.z * inv_len, 0.0, e1.x * inv_len)
     } else {
         let inv_len = 1.0 / f32::sqrt(e1.y * e1.y + e1.z * e1.z);
-        Vec3::new(0.0, e1.z * inv_len, -e1.y * inv_len)
+        Vector::new(0.0, e1.z * inv_len, -e1.y * inv_len)
     };
     let e3 = cross(e1, &e2);
     (e2, e3)
 }
 /// Compute the reflection of `w` about `v`, both vectors should be normalized
-pub fn reflect(w: &Vec3, v: &Vec3) -> Vec3 {
+pub fn reflect(w: &Vector, v: &Vector) -> Vector {
     2.0 * dot(w, v) * *v - *w
 }
 /// Compute the refraction of `w` entering surface with normal `n` where
 /// the refractive index in the incident material is `eta_1` and the refractive
 /// index of the entered material is `eta_2`. In the case of total internal
 /// refraction this will return None.
-pub fn refract(w: &Vec3, n: &Vec3, eta_1: f32, eta_2: f32) -> Option<Vec3> {
+pub fn refract(w: &Vector, n: &Vector, eta_1: f32, eta_2: f32) -> Option<Vector> {
     let eta = eta_1 / eta_2;
     let cos_t1 = dot(n, w);
     let sin_t1_sqr = f32::max(0.0, 1.0 - f32::powf(cos_t1, 2.0));
@@ -131,23 +128,23 @@ mod tests {
 
     #[test]
     fn test_cross_product() {
-        let a = Vec3::new(1f32, 0f32, 0f32);
-        let b = Vec3::new(0f32, 1f32, 0f32);
-        assert_eq!(cross(&a, &b), Vec3::new(0f32, 0f32, 1f32));
+        let a = Vector::new(1f32, 0f32, 0f32);
+        let b = Vector::new(0f32, 1f32, 0f32);
+        assert_eq!(cross(&a, &b), Vector::new(0f32, 0f32, 1f32));
     }
 
     #[test]
     fn test_dot_product() {
-        let a = Vec3::new(1f32, 0f32, 0f32);
-        let b = Vec3::new(0f32, 1f32, 0f32);
+        let a = Vector::new(1f32, 0f32, 0f32);
+        let b = Vector::new(0f32, 1f32, 0f32);
         assert_eq!(dot(&a, &b), 0f32);
     }
 
     #[test]
     fn test_lerp() {
-        let a = Vec3::new(1f32, 0f32, 0f32);
-        let b = Vec3::new(0f32, 1f32, 0f32);
-        assert_eq!(lerp(0.5, &a, &b), Vec3::new(0.5f32, 0.5f32, 0f32));
+        let a = Vector::new(1f32, 0f32, 0f32);
+        let b = Vector::new(0f32, 1f32, 0f32);
+        assert_eq!(lerp(0.5, &a, &b), Vector::new(0.5f32, 0.5f32, 0f32));
     }
 
     #[test]
@@ -160,7 +157,7 @@ mod tests {
     #[test]
     fn test_spherical_dir() {
         let calcutated = spherical_dir(1f32, 0f32, f32::consts::FRAC_PI_2);
-        let reference = Vec3::new(0f32, 1f32, 0f32);
+        let reference = Vector::new(0f32, 1f32, 0f32);
         assert_approx_eq!(calcutated[0], reference[0]);
         assert_approx_eq!(calcutated[1], reference[1]);
         assert_approx_eq!(calcutated[2], reference[2]);
